@@ -1,0 +1,73 @@
+
+-- Setup for animations to be loaded and played from Client (Player)
+-- Must be loaded on Client, only NPCs can be loaded and played from Server
+local Players = game:GetService("Players")
+local character = Players.LocalPlayer.Character
+
+if not character or not character.Parent then
+	character = Players.LocalPlayer.CharacterAdded:Wait()
+end
+
+local humanoid = character:WaitForChild("Humanoid")
+
+-- Create ATTACK animation, assign animation id, then load onto humanoid
+local AttackAnim = Instance.new("Animation")
+AttackAnim.AnimationId = "rbxassetid://5229363222" -- ***USE YOUR ID HERE INSTEAD!***
+local AttackAnimTrack = humanoid:LoadAnimation(AttackAnim)
+
+-- Create IDLE animation, assign animation id, then load onto humanoid
+local IdleAnim = Instance.new("Animation")
+IdleAnim.AnimationId = "rbxassetid://5229367772" -- ***USE YOUR ID HERE INSTEAD!***
+local IdleAnimTrack = humanoid:LoadAnimation(IdleAnim)
+
+local PCanAttack = true 
+
+-- When player equips Sword:
+script.Parent.Equipped:Connect(function()
+	print("Sword is equipped. Idle animation playing.")
+	-- Play Idle Animation
+	IdleAnimTrack:Play()
+end)
+
+-- When player clicks while holding Sword:
+script.Parent.Activated:connect(function()
+	if PCanAttack == true then
+		PCanAttack = false
+		-- Stop Idle Animation
+		IdleAnimTrack:Stop()
+		print("\nAttack animation playing!")
+		-- Play Attack Animation
+		AttackAnimTrack:Play()
+		wait(0.5)
+		-- Stop Attack Animation
+		AttackAnimTrack:Stop()
+		print("\nIdle animation playing.")
+		-- Play Idle Animation
+		IdleAnimTrack:Play()
+		PCanAttack = true
+	end
+end)
+
+-- When player hits a part with Sword:
+script.Parent.Union.Touched:connect(function(PartAttacked)
+	if script.Parent.TookDamage.Value == false then
+		script.Parent.TookDamage.Value = true
+		if PartAttacked.Parent.Humanoid.Health <= 0 then
+			-- Can't Damage Humanoid if Dead
+			print("\nThe Enemy is Already Dead!")
+			wait(0.5)
+			script.Parent.TookDamage.Value = false
+		elseif PartAttacked.Parent.Humanoid.Health > 0 then
+			-- Deal Damage to Humanoid if Alive
+			PartAttacked.Parent.Humanoid:TakeDamage(20)
+			-- Output Damage Stats
+			print("\nEnemy Taking Damage...")
+			print("Enemy Part Attacked:", PartAttacked)
+			print("Enemy Health:", PartAttacked.Parent.Humanoid.Health)
+			wait(0.5)
+			script.Parent.TookDamage.Value = false
+		end
+	end
+end)
+ 
+ 
